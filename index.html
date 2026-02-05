@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    
+<label class="radio-btn">
+	<input type="radio" name="row-expand-mode" value="collapsed" checked />
+	Свернуть всё
+</label>
+<label class="radio-btn">
+	<input type="radio" name="row-expand-mode" value="expanded" />
+	Развернуть всё
+</label>
+<button id="csv-btn">Скачать CSV</button>
+<input
+	id="global-search"
+	type="text"
+	placeholder="&#128269 Текстовый фильтр по всем столбцам..."
+/>
+<div id="column-chooser" class="column-chooser"></div>
+<div id="table"  class="container"></div>
+<div id="wrapper">
+	<div id="charts-group">
+			<button id="add-chart-container-btn">
+				Новый контейнер
+			</button>
+	</div>
+</div>
+<footer>
+	<p>Все данные взяты с сайта <a href="https://rgantd.kaisa.ru/type/SHUHOV">https://rgantd.kaisa.ru/type/SHUHOV</p>
+</footer>
+  </body>
+  
+  <script type="module" src="main.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.noStyle.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6"></script>
+
+</html>

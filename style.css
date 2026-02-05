@@ -1,0 +1,454 @@
+#table {
+  height: 553px;
+  resize: vertical;
+  overflow: auto; 
+}
+#charts-group {
+	display: flex;
+	flex-wrap: wrap;
+    margin-top: 2%;
+    margin-bottom: 30%;
+}
+.chart-container {
+	width: 600px;
+	height: 425px;
+	display: flex;
+	flex-direction: column;
+	margin-left: 15px;
+	margin-bottom: 15px;
+	resize: both;
+  	overflow: auto;
+    border-style: solid;
+    border-color: rgb(201, 201, 201);
+    border-width: 2px;
+    border-radius: 10px;
+    padding: 1%;
+}
+#add-chart-container-btn {
+    cursor: pointer;
+    width: 600px;
+    height: 450px;
+    font: Arial;
+    font-size: 20px;
+    color: #a8a8a8;
+    background-color: #fff;
+    border-color: #fff;
+    border-width: 0px;
+    border-radius: 10px;
+    margin-left: 20px;
+}
+#add-chart-container-btn:hover {
+    outline: 3px dashed lightgrey;
+    color: #2C2F33;
+}
+/* Кнопки графиков */
+.chart-btns {
+    display: flex;
+    width: 100%;
+}
+.remove-chart-container-btn {
+	font-size: small;
+	color: #84868B;
+	font-family: Arial;
+	border-radius: 8px;
+	border-width: 0;
+	cursor: pointer;
+    margin-left: auto;
+    margin-right: 10px;
+}
+.add-chart-btn {
+	font-size: small;
+	color: #84868B;
+	font-family: Arial;
+	border-radius: 8px;
+	border-width: 0;
+	cursor: pointer;
+	text-align: center;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+.remove-chart-container-btn:hover, .add-chart-btn:hover {
+	outline: 1px solid lightgrey;
+    color: #2C2F33;
+}
+/* Выбор графика */
+.custom-select { 
+    font: Arial;
+}
+.selected-value {
+    background-color: #F0F0F0;
+	color: #84868B;
+    font-size: 13px;
+	font-family: Arial;
+	border-radius: 10px;
+	cursor: pointer;
+	text-align: center;
+    padding: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+    margin-left: 10px;
+    margin-right: 3px;
+}
+.selected-value:hover {
+	outline: 1px solid lightgrey;
+    color: #2C2F33;
+}
+.dropdown {
+    margin-left: 10px;
+    position: absolute;
+    background: #fff;
+    display: none;
+    z-index: 10;
+    font-size: 14px;
+    color: black;
+    background-color: #FFFFFF;
+}
+.dropdown.open {
+    display: block;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-radius: 10px;
+    border-style: solid;  /* граница дропдаун */
+    border-color: rgb(235, 235, 235);
+    border-width: 1px;
+}
+.dropdown-item {
+    cursor: pointer;
+    background: #fff;
+    white-space: normal;
+    width: 200px;
+}
+.dropdown-submenu {
+    position: relative;
+}
+.metric-row {
+    font-size: 14px;
+    cursor: pointer;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+.metric-row:hover {
+    background-color: #f3f3f3;
+    color: #087AD1;
+}
+.submenu-header {
+    font-size: 14px;
+    cursor: pointer;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+.submenu-header:hover {
+    background-color: #f3f3f3;
+    color: #087AD1;
+}
+.submenu {
+    margin-left: 3px;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background: #fff;
+    display: none;
+}
+.submenu.open {
+    display: block;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-radius: 10px;
+    border-style: solid;  /* граница дропдаун */
+    border-color: rgb(235, 235, 235);
+    border-width: 1px;
+}
+.sublist {
+    display: none;
+}
+.sublist.open { display: block; }
+.g {
+    width: 100%;
+    height: 100%;
+    margin: 1%;
+    position: relative;
+}
+/* Кастомизация таблицы */
+.radio-btn {
+	font-size: small;
+	color: #84868B;
+	font-family: Arial;
+	margin-left: 5px;
+    cursor: pointer;
+}
+.radio-btn:hover {
+    color: #2C2F33;
+}
+.cell-content {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+	user-select: text !important;
+}
+.cell-content.expanded {
+	white-space: normal;
+	user-select: text !important;
+}
+.is-global-expanded .cell-content {
+    white-space: normal !important;
+	user-select: text !important;
+}
+.no-data-cell {
+	color: #9c9c9c;
+	background-color: #f3f3f3;
+}
+#csv-btn {
+	font-size: small;
+	color: #84868B;
+	font-family: Arial;
+	border-radius: 8px;
+	border-width: 0;
+	cursor: pointer;
+	text-align: center;
+}
+#csv-btn:hover {
+	outline: 1px solid lightgrey;
+    color: #2C2F33;
+}
+#global-search {
+	font-size: small;
+	color: #84868B;
+	background-color: #f3f3f3;
+	font-family: Arial;
+	width: 315px;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	padding: 5px 10px;
+	min-height: 20px;
+	border-radius: 10px;
+	outline: none;
+	border: none;
+	line-height: 1.15;
+	box-shadow: 0px 10px 20px -18px;
+}
+#global-search:hover {
+	outline: 1px solid lightgrey;
+}
+/* Контейнеры фильтров */
+.ag-filter {
+    position: fixed;
+    border: 0px solid;
+    border-radius: 10px;
+}
+.date-array-filter-container,
+.multi-condition-filter-container {
+    padding: 6px;
+    font-family: Arial;
+    font-size: 13px;
+    background-color: #ffffff;
+}
+.date-array-filter-mode-switcher,
+.multi-condition-filter-mode-switcher {
+    display: flex;
+    padding-bottom: 8px;
+}
+.date-array-filter-mode-switcher label,
+.multi-condition-filter-mode-switcher label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.date-array-filter-mode-switcher label:hover,
+.multi-condition-filter-mode-switcher label:hover {
+    color: #2C2F33;
+}
+.date-array-filter-mode-switcher input[type="radio"],
+.multi-condition-filter-mode-switcher input[type="radio"] {
+    accent-color: #087AD1;
+    cursor: pointer;
+}
+.date-array-filter-clause-row,
+.multi-condition-filter-condition-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 8px;
+    color: black;
+}
+.date-array-filter-clause-row {
+    width: 80%;
+}
+.date-array-filter-container select,
+.multi-condition-filter-container select,
+.date-array-filter-container input[type="number"],
+.multi-condition-filter-container input[type="text"] {
+    font-family: Arial;
+    font-size: 12px;
+    color: black;
+    border: 0px solid #D7E2E6;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    outline: none;
+    height: 26px;
+    box-sizing: border-box;
+    width: 135px;
+}
+.date-array-filter-container select,
+.multi-condition-filter-container select {
+    flex: 0 0 130px;
+}
+.date-array-filter-container input[type="number"],
+.multi-condition-filter-container .multi-condition-input-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+.multi-condition-input-wrapper input {
+    width: 100%;
+}
+.date-array-filter-container select:focus,
+.date-array-filter-container input:focus,
+.multi-condition-filter-container select:focus,
+.multi-condition-filter-container input:focus {
+    border-color: #087AD1;
+    box-shadow: 0 0 0 1px #087AD1;
+}
+.remove-clause-button,
+.remove-condition-button {
+    flex: 0 0 24px;
+    height: 24px;
+    width: 24px;
+    border: none;
+    background: transparent;
+    color: #84868B;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.remove-clause-button:hover,
+.remove-condition-button:hover {
+    background-color: #ffeeee;
+}
+.date-array-filter-controls,
+.multi-condition-filter-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+.date-array-filter-controls button,
+.multi-condition-filter-controls button {
+    padding: 6px 12px;
+    font-size: 13px;
+    font-family: Arial;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s;
+}
+.date-array-filter-controls button:first-child,
+.multi-condition-filter-controls button:first-child {
+    background-color: #087AD1;
+    color: white;
+}
+.date-array-filter-controls button:first-child:hover,
+.multi-condition-filter-controls button:first-child:hover {
+    background-color: #0660a5;
+}
+.date-array-filter-controls button:last-child,
+.multi-condition-filter-controls button:last-child {
+    background-color: #f3f3f3;
+    color: #555B62;
+}
+.date-array-filter-controls button:last-child:hover,
+.multi-condition-filter-controls button:last-child:hover {
+    background-color: #e0e0e0;
+}
+.multi-condition-suggestions {
+    display: none; 
+    position: absolute;
+    z-index: 99999 !important;
+    background-color: #FFFFFF;
+    border: 1px solid #D7E2E6;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    list-style: none;
+    margin: 0;
+    padding: 4px 0; 
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: Arial;
+    font-size: 13px;
+    min-width: 130px;
+    box-sizing: border-box;
+}
+.multi-condition-suggestions:empty {
+    display: none !important;
+    border: none !important;
+    padding: 0 !important;
+}
+.multi-condition-suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #2C2F33;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.multi-condition-suggestion-item:hover {
+    background-color: #f3f3f3;
+    color: #087AD1;
+}
+/* Выбор столбцов */
+.column-chooser {
+	display: flex;
+    gap: 10px;
+	flex-wrap: wrap;
+    font-family: Arial;
+    background-color: #FFFFFF;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    margin-left: 6px;
+    width: 100%;
+}
+.column-chooser-row {
+    cursor: pointer;
+    font-size: smaller;
+    color: #84868B;
+}
+.column-chooser-row:hover {
+    color: #2C2F33;
+}
+.column-chooser-row input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: #087AD1;
+}
+/* tooltip */
+.tooltip {
+    position: fixed;
+    background: white;
+    color: #000000;
+    padding: 6px 10px;
+    font-size: 14px;
+    line-height: 1.4;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1000;
+    transform: translate(-50%, -100%);
+    margin-top: -8px;
+    border: 1px solid black;
+}
+.tooltip::after {
+    position: fixed;
+    content: '';
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgb(255, 255, 255) transparent transparent transparent;
+}
