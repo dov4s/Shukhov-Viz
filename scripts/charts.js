@@ -237,7 +237,7 @@ export function draw(chartType, chartMetric, records, suggestions, g) {
       networkChart(data, chartMetric, g);
     }
     else if (
-      chartType === 'Сетевой граф по локациям'
+      chartType === 'Сетевой граф по адресам'
     ) {
       data = processData.getNetworkData(records, 'location');
       g.drawFunction = networkChart;
@@ -275,7 +275,7 @@ function lineChart(data, chartMetric, g) {
         "Вероятно подокументных": "docs",
         "Вероятно поединичных": "nonDocs",
         "Возможных дубликатов": "dupes",
-        "Топ 3 дат": "topDates",
+        "Встречающиеся даты": "topDates",
         "Видов дат": "uniqueDates"
       },
       marker: true,
@@ -315,7 +315,7 @@ function stackedBarChart(data, chartMetric, g) {
         "Вероятно подокументных": "docs",
         "Вероятно поединичных": "nonDocs",
         "Возможных дубликатов": "dupes",
-        "Топ 3 дат": "topDates",
+        "Встречающиеся даты": "topDates",
         "Видов дат": "uniqueDates"
       },
       tip: {

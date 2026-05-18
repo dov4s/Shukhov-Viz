@@ -1,8 +1,66 @@
 import { spawnChart } from './scripts/addRemoveChart.js';
 import { draw } from './scripts/charts.js';
-import { createTable } from './scripts/table.js';
+import { createTable, getGridApi, applyTableState } from './scripts/table.js';
 
 spawnChart();
+
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => { clearTimeout(timeout); func(...args); };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+function getUrlState() {
+  const params = new URLSearchParams(window.location.search);
+  const s = params.get('s');
+  if (!s) return null;
+  try {
+    return JSON.parse(decodeURIComponent(atob(s)));
+  } catch (e) {
+    console.error("Не удалось прочитать состояние из URL", e);
+    return null;
+  }
+}
+
+function updateUrlState() {
+  const gridApi = getGridApi();
+  const state = {
+    search: document.getElementById('global-search').value || "",
+    charts: []
+  };
+
+  document.querySelectorAll('.chart-container').forEach(container => {
+    const select = container.querySelector('select.chart-select');
+    if (select && select.value && select.value !== 'Выбрать график') {
+      const [type, metric] = select.value.split('||');
+      state.charts.push({
+        type, metric,
+        w: container.style.width,
+        h: container.style.height
+      });
+    }
+  });
+
+  if (gridApi) {
+    state.filters = gridApi.getFilterModel();
+    const cols = gridApi.getAllGridColumns ? gridApi.getAllGridColumns() : gridApi.getAllColumns();
+    if (cols) {
+      state.cols = cols.filter(c => c.isVisible()).map(c => c.getColId());
+    }
+  }
+
+  const stateStr = btoa(encodeURIComponent(JSON.stringify(state)));
+  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?s=' + stateStr;
+  window.history.replaceState({ path: newUrl }, '', newUrl);
+}
+
+const debouncedUpdateUrl = debounce(updateUrlState, 500);
+
+window.addEventListener('tableStateChanged', debouncedUpdateUrl);
+window.addEventListener('chartStateChanged', debouncedUpdateUrl);
 
 function addChart(chartContainer, records, suggestions) {
   if (chartContainer.children.length !==2) {
@@ -39,6 +97,7 @@ d3.json("data.json")
     createTable(records, suggestions, (filtered) => {
       records = filtered;
       drawAllCharts(filtered, suggestions);
+      debouncedUpdateUrl();
     });
     function drawAllCharts(filtered, suggestions) {
       const chartContainers = Array.from(document.getElementsByClassName("g"));
@@ -75,36 +134,42 @@ d3.json("data.json")
 
       for (let i = 0; i < addChartBtns.length; i++) {
         if (!listendButtons.includes(addChartBtns[i].id)) {
-          const container =  addChartBtns[i].parentNode.parentNode;
-          addChartBtns[i].addEventListener('click', () =>
-            addChart(
-              container,
-              records,
-              suggestions
-            ),
-          );
+          const container = addChartBtns[i].parentNode.parentNode;
+          
+          new ResizeObserver(debouncedUpdateUrl).observe(container);
+
+          addChartBtns[i].addEventListener('click', () => {
+            addChart(container, records, suggestions);
+            debouncedUpdateUrl();
+          });
         }
         listendButtons.push(addChartBtns[i].id);
       }
     });
     
     function spawnDefaultCharts() {
+      const urlState = getUrlState();
+      let configsToSpawn = [];
 
-      const defaultConfigs = [
-        { type: 'Диаграмма с накоплением по архивам', metric: 'Количество', w: '60vw', h: '45vh' },
-        { type: 'Сетевой граф по локациям', metric: 'Количество', w: '32vw', h: '45vh' },
-        
-        { type: 'Диаграмма с накоплением по архивам', metric: 'Вес', w: '60vw', h: '45vh' },
-        { type: 'Древовидная карта рубрик и подрубрик', metric: 'Количество', w: '32vw', h: '45vh' },
-        
-        { type: 'Древовидная карта архивов, фондов, описей и дел', metric: 'Количество', w: '78vw', h: '82vh' },
-        
-        { type: 'Диаграмма / Архив', metric: 'Количество', w: '23vw', h: '35vh' },
-        { type: 'Диаграмма / Вид документа', metric: 'Количество', w: '26vw', h: '35vh' },
-        { type: 'Диаграмма / Носитель', metric: 'Количество', w: '23vw', h: '35vh' }
-      ];
+      if (urlState && urlState.charts && urlState.charts.length > 0) {
+        configsToSpawn = urlState.charts;
+      } else {
+        configsToSpawn = [
+          { type: 'Диаграмма с накоплением по архивам', metric: 'Количество', w: '60vw', h: '45vh' },
+          { type: 'Сетевой граф по адресам', metric: 'Количество', w: '32vw', h: '45vh' },
+          
+          { type: 'Диаграмма с накоплением по архивам', metric: 'Вес', w: '60vw', h: '45vh' },
+          { type: 'Древовидная карта рубрик и подрубрик', metric: 'Количество', w: '32vw', h: '45vh' },
+          
+          { type: 'Древовидная карта архивов, фондов, описей и дел', metric: 'Количество', w: '78vw', h: '82vh' },
+          
+          { type: 'Диаграмма / Архив', metric: 'Количество', w: '23vw', h: '35vh' },
+          { type: 'Диаграмма / Вид документа', metric: 'Количество', w: '26vw', h: '35vh' },
+          { type: 'Диаграмма / Носитель', metric: 'Количество', w: '23vw', h: '35vh' }
+        ];
+      }
 
-      defaultConfigs.forEach(conf => {
+      configsToSpawn.forEach(conf => {
         addContainerBtn.click();
         
         const containers = document.getElementsByClassName('chart-container');
@@ -126,9 +191,12 @@ d3.json("data.json")
         
         addBtn.click();
       });
+
+      if (urlState) {
+        applyTableState(urlState);
+      }
     }
 
-    // Запускаем через небольшую задержку, чтобы DOM успел построиться
     setTimeout(spawnDefaultCharts, 100);
   })
   .catch((err) => {

@@ -39,7 +39,7 @@ export function spawnChart(){
 				],
 				'Древовидная карта рубрик и подрубрик': ['Количество'],
 				'Древовидная карта архивов, фондов, описей и дел': ['Количество'],
-				'Сетевой граф по локациям': ['Количество'],
+				'Сетевой граф по адресам': ['Количество'],
 			},
 			'Диаграммы': {
 				'Диаграмма / Архив': ['Количество'],
@@ -213,6 +213,7 @@ export function spawnChart(){
 		removeContainerBtn.textContent = 'Удалить контейнер';
 		removeContainerBtn.onclick = function() {
 			chartContainer.parentNode.removeChild(chartContainer);
+			window.dispatchEvent(new Event('chartStateChanged'));
 		};
 
 		containersCounter += 1;

@@ -90,7 +90,7 @@ export function createTable(records, suggestions, onFilterCallback) {
     },
     columnDefs: [
       {
-        headerName: "Архивный шифр",
+        headerName: "Справочные данные",
         field: "identifier",
         filter: MultiConditionFilter,
         filterParams: { suggestions: suggestions["archive_name"] },
@@ -101,12 +101,12 @@ export function createTable(records, suggestions, onFilterCallback) {
         filter: MultiConditionFilter,
       },
       {
-        headerName: "Заголовок",
+        headerName: "Название документа или дела",
         field: "title",
         filter: MultiConditionFilter,
       },
       {
-        headerName: "Даты",
+        headerName: "Дата создания",
         field: "raw_dates",
         filter: DatesFilter,
         filterValueGetter: (params) => params.data.dates,
@@ -134,7 +134,7 @@ export function createTable(records, suggestions, onFilterCallback) {
         hide: true,
       },
       {
-        headerName: "Локации",
+        headerName: "Адрес расположения объекта",
         field: "raw_location",
         filter: MultiConditionFilter,
         filterValueGetter: (params) => params.data.location,
@@ -296,6 +296,7 @@ export function createTable(records, suggestions, onFilterCallback) {
   searchInput.addEventListener("input", () => {
     externalFilterText = searchInput.value.toLowerCase();
     gridApi.onFilterChanged();
+    window.dispatchEvent(new Event('tableStateChanged'));
   });
 }
 
@@ -384,15 +385,13 @@ function initColumnChooser(gridApi) {
       const id = e.target.dataset.colId;
       const visible = e.target.checked;
 
-      // В v31 метод setColumnVisible DEPRECATED — использовать setColumnsVisible (массив)
       if (typeof gridApi.setColumnsVisible === "function") {
         gridApi.setColumnsVisible([id], visible);
       } else if (typeof gridApi.setColumnVisible === "function") {
-        // на старых версиях (на всякий случай)
         gridApi.setColumnVisible(id, visible);
-      } else {
-        console.error("API не поддерживает setColumnsVisible/setColumnVisible");
       }
+      
+      window.dispatchEvent(new Event('tableStateChanged'));
     });
 
     const text = document.createElement("span");
@@ -1012,4 +1011,44 @@ class MultiConditionFilter {
         this.cleanupFunctions = [];
     }
   }
+}
+
+export function getGridApi() {
+  return gridApi;
+}
+
+export function applyTableState(state) {
+  if (!gridApi || !state) return;
+  
+  // Восстанавливаем видимость столбцов
+  if (state.cols && state.cols.length > 0) {
+    const allCols = gridApi.getAllGridColumns ? gridApi.getAllGridColumns() : gridApi.getAllColumns();
+    const allColIds = allCols.map(c => c.getColId());
+    
+    // Скрываем все, затем показываем только сохраненные
+    if (typeof gridApi.setColumnsVisible === "function") {
+      gridApi.setColumnsVisible(allColIds, false);
+      gridApi.setColumnsVisible(state.cols, true);
+    } else {
+      allColIds.forEach(id => gridApi.setColumnVisible(id, false));
+      state.cols.forEach(id => gridApi.setColumnVisible(id, true));
+    }
+    initColumnChooser(gridApi); // Обновляем чекбоксы в UI
+  }
+  
+  // Восстанавливаем фильтры (AgGrid делает магию и сам их распарсит, включая наши кастомные)
+  if (state.filters) {
+    gridApi.setFilterModel(state.filters);
+  }
+  
+  // Восстанавливаем глобальный поиск
+  if (state.search) {
+    const searchInput = document.getElementById("global-search");
+    if (searchInput) {
+        searchInput.value = state.search;
+        externalFilterText = state.search.toLowerCase();
+    }
+  }
+  
+  gridApi.onFilterChanged();
 }
