@@ -308,6 +308,7 @@ export function createTable(records, suggestions, onFilterCallback) {
       window.dispatchEvent(new Event('tableStateChanged')); 
     }, 400);
   });
+}
 
 function getFilteredRecords() {
   const result = [];
