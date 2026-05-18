@@ -134,7 +134,7 @@ export function createTable(records, suggestions, onFilterCallback) {
         hide: true,
       },
       {
-        headerName: "Локация",
+        headerName: "Локации",
         field: "raw_location",
         filter: MultiConditionFilter,
         filterValueGetter: (params) => params.data.location,
@@ -199,13 +199,27 @@ export function createTable(records, suggestions, onFilterCallback) {
         hide: true,
       },
       {
+        headerName: "Подокументное описание",
+        field: "probably_document",
+        filter: MultiConditionFilter,
+        filterParams: { suggestions: suggestions["probably_document"] },
+        hide: true,
+      },
+      {
+        headerName: "Является дубликатом",
+        field: "probably_duplicated",
+        filter: MultiConditionFilter,
+        filterParams: { suggestions: suggestions["probably_duplicated"] },
+        hide: true,
+      },
+      {
         headerName: "Ссылка в системе \"Архив Шухова\"",
         field: "url",
         filter: MultiConditionFilter,
       },
       {
         field: 'notes',
-        headerName: 'Ваши заметки',
+        headerName: 'Ваши заметки (можно редактировать)',
         filter: MultiConditionFilter,
         editable: true,
       },

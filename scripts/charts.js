@@ -21,11 +21,18 @@ export function draw(chartType, chartMetric, records, suggestions, g) {
       g.drawFunction = lineChart;
       lineChart(data, chartMetric, g);
     }
-    // Treemap
+    // Treemapы
     else if (chartType === 'Древовидная карта рубрик и подрубрик') {
       data = processData.getTreemapData(records);
       g.drawFunction = treemapChart;
-      treemapChart(data, chartMetric, g, suggestions);
+      g.colorDomain = suggestions['category']; 
+      treemapChart(data, chartMetric, g);
+    }
+    else if (chartType === 'Древовидная карта архивов, фондов, описей и дел') {
+      data = processData.getArchiveTreemapData(records);
+      g.drawFunction = treemapChart;
+      g.colorDomain = suggestions['archive_name']; 
+      treemapChart(data, chartMetric, g);
     }
     // Диаграммы с накоплением
     else if (chartType === 'Накопление / Вид документа') {
@@ -255,6 +262,7 @@ export function draw(chartType, chartMetric, records, suggestions, g) {
   }
 }
 
+// функции переделаны с ИИ
 function lineChart(data, chartMetric, g) {
   g.innerHTML = '';
   const plot = Plot.lineY(
@@ -263,34 +271,27 @@ function lineChart(data, chartMetric, g) {
       x: 'year',
       y: METRIC_KEYS[chartMetric],
       channels: {
-        count: 'Количество',
-        weight: 'Вес',
-        precision: 'Интенсивность',
+        "Всего описательных статей": "count",
+        "Вероятно подокументных": "docs",
+        "Вероятно поединичных": "nonDocs",
+        "Возможных дубликатов": "dupes",
+        "Топ 3 дат": "topDates",
+        "Видов дат": "uniqueDates"
       },
       marker: true,
       tip: {
         format: {
-          x: d3.format('.0f'),           
-        }
+          x: d3.format('.0f')
+        },
+        lineWidth: 100
       },
     }
-    
   ).plot({
     width: g.clientWidth,
     height: g.clientHeight,
-    x: {
-      label: 'Год',
-      grid: true,
-      ticks: 10,
-      tickFormat: d3.format('.0f')
-    },
-    y: {
-      label: chartMetric,
-      grid: true,
-    },
-    style: {
-      fontSize: '14px',
-    },
+    x: { label: 'Год', grid: true, ticks: 10, tickFormat: d3.format('.0f') },
+    y: { label: chartMetric, grid: true },
+    style: { fontSize: '14px' },
   });
 
   g.appendChild(plot);
@@ -309,43 +310,29 @@ function stackedBarChart(data, chartMetric, g) {
       x: 'year',
       y: METRIC_KEYS[chartMetric],
       fill: 'key',
-      tip: {
-        format: {
-          x: d3.format('.0f'),           
-        }
-      },
       channels: {
+        "Всего описательных статей": "count",
+        "Вероятно подокументных": "docs",
+        "Вероятно поединичных": "nonDocs",
+        "Возможных дубликатов": "dupes",
+        "Топ 3 дат": "topDates",
+        "Видов дат": "uniqueDates"
       },
+      tip: {
+        format: { x: d3.format('.0f') },
+        lineWidth: 100
+      }
     },
   ).plot({
     width: g.clientWidth,
     height: g.clientHeight,
     x: {
-      label: 'Год',
-      grid: true,
-      tickFormat: d3.format('.0f'),
-      ticks: tickValues,
-      domain: d3.range(
-        minYear, maxYear + 1
-      )
+      label: 'Год', grid: true, tickFormat: d3.format('.0f'),
+      ticks: tickValues, domain: d3.range(minYear, maxYear + 1)
     },
-    y: {
-      label: chartMetric,
-      grid: true,
-    },
-    color: {
-      range: d3.schemeObservable10,
-      // [
-      //   "#ff7f00", "#33a02c", "#1f78b4", "#e31a1c", "#b2df8a",
-      //   "#fb9a99", "#a6cee3", "#984ea3", "#f781bf",
-      // ],
-
-      domain: g.colorDomain,
-      legend: true,
-    },
-    style: {
-      fontSize: '14px',
-    },
+    y: { label: chartMetric, grid: true },
+    color: { range: d3.schemeObservable10, domain: g.colorDomain, legend: true },
+    style: { fontSize: '14px' },
   });
   g.appendChild(plot);
 }
@@ -357,7 +344,6 @@ function barChart(data, chartMetric, g) {
     .filter(d => d[METRIC_KEYS[chartMetric]] != 0)
     .sort((a, b) => b.count - a.count);
 
-  // функция от ChatGPT (авто-вычисление ширины для лейблов)
   function computeTextWidth(text, font = '14px Arial') {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -374,35 +360,25 @@ function barChart(data, chartMetric, g) {
       x: METRIC_KEYS[chartMetric],
       y: 'key',
       fill: '#1f78b4',
-      tip: true,
       channels: {
-        count: 'Количество',
+        "Вероятно подокументных": "docs",
+        "Вероятно поединичных": "nonDocs",
+        "Возможных дубликатов": "dupes"
       },
+      tip: { lineWidth: 100 }
     },
   ).plot({
     width: g.clientWidth,
     height: g.clientHeight,
     marginLeft: maxWidth + 40,
-    x: {
-      label: 'Количество',
-      grid: true,
-      tickFormat: d3.format('.0f'),
-      ticks: 5,
-    },
-    y: {
-      domain: dropNaData.map(d => d.key),
-      grid: true,
-    },
-    style: {
-      fontSize: '14px',
-    },
+    x: { label: 'Всего описательных статей', grid: true, tickFormat: d3.format('.0f'), ticks: 5 },
+    y: { domain: dropNaData.map(d => d.key), grid: true },
+    style: { fontSize: '14px' },
   });
 
   g.appendChild(plot);
 }
 
-// Функции из v1, адаптированные через Gemini под новый сайт
-// Gemini + редактирование
 function networkChart(data, chartMetric, g) {
   g.innerHTML = '';
 
@@ -469,9 +445,15 @@ function networkChart(data, chartMetric, g) {
   // Интерактивность (Mouseover / Tooltip)
   nodeElements
     .on("mouseover", (event, d) => {
-      // Текст тултипа
-      tooltip.html(`${d.id}<br><strong>Количество</strong> ${d.value}`)
-        .style("opacity", 1);
+      tooltip.html(`
+          <strong>${d.id}</strong><br>
+          Всего описательных статей: ${d.value}<br>
+          Вероятно подокументных: ${d.docsCount}<br>
+          Вероятно поединичных: ${d.nonDocsCount}<br>
+          Возможных дубликатов: ${d.dupesCount}
+        `)
+        .style("opacity", 1)
+        .style("white-space", "nowrap");
 
       // Подсветка узла
       d3.select(event.currentTarget).attr("fill", "red");
@@ -587,7 +569,7 @@ function networkChart(data, chartMetric, g) {
 }
 
 // Gemini + редактирование
-function treemapChart(data, chartMetric, g, suggestions) {
+function treemapChart(data, chartMetric, g) {
   g.innerHTML = '';
   g.style.position = 'relative';
 
@@ -600,130 +582,121 @@ function treemapChart(data, chartMetric, g, suggestions) {
     .attr("height", height)
     .style("display", "block");
 
-
-  const allCategories = suggestions && suggestions['category'] ? suggestions['category'] : [];
-
+  // ИСПОЛЬЗУЕМ СОХРАНЕННЫЙ ДОМЕН ДЛЯ СТАБИЛЬНЫХ ЦВЕТОВ!
   const colorScale = d3.scaleOrdinal()
-    .domain(allCategories)
-    .range(d3.schemeTableau10);
+    .domain(g.colorDomain || [])
+    .range(d3.schemeObservable10);
 
-  // Создаем иерархию
   const root = d3.hierarchy(data)
     .sum(d => d.value)
     .sort((a, b) => b.value - a.value);
 
-  // Раскладка
+  // Суммируем наши кастомные счетчики по иерархии снизу вверх
+  root.eachAfter(node => {
+    if (node.children) {
+      node.data.docsCount = d3.sum(node.children, c => c.data.docsCount || 0);
+      node.data.nonDocsCount = d3.sum(node.children, c => c.data.nonDocsCount || 0);
+      node.data.dupesCount = d3.sum(node.children, c => c.data.dupesCount || 0);
+    }
+  });
+
   d3.treemap()
     .size([width, height])
     .paddingOuter(3)
-    .paddingTop(30)
+    .paddingTop(18) // Чуть уменьшен отступ сверху, чтобы 4 слоя архивов умещались красиво
     .paddingInner(1)
     (root);
 
-  // Тултип (глобальный fixed, как мы делали ранее)
-  const tooltip = d3.select(g)
-    .append("div")
-    .attr("class", "tooltip");
-
-  // Слои
+  const tooltip = d3.select(g).append("div").attr("class", "tooltip");
   const treemapG = svg.append("g").attr("id", "treemap-main");
   const highlightG = svg.append("g").attr("id", "treemap-highlight");
   const hoverG = svg.append("g").attr("id", "treemap-hover");
 
   const nodes = root.descendants().filter(d => d.depth > 0);
 
-  // 1. Основной слой
+  // Основной слой
   treemapG.selectAll("rect")
     .data(nodes)
     .join("rect")
     .attr("x", d => d.x0)
     .attr("y", d => d.y0)
-    .attr("width", d => d.x1 - d.x0)
-    .attr("height", d => d.y1 - d.y0)
+    .attr("width", d => Math.max(0, d.x1 - d.x0))
+    .attr("height", d => Math.max(0, d.y1 - d.y0))
     .attr("fill", d => {
-      if (d.depth === 2) {
-        return d3.color(colorScale(d.parent.data.name)).brighter(0.5);
-      } else {
-        return colorScale(d.data.name);
-      }
+      let ancestor = d;
+      while (ancestor.depth > 1) ancestor = ancestor.parent;
+      return colorScale(ancestor.data.name);
     })
+    .attr("fill-opacity", d => d.depth > 1 ? 0.8 : 1) // легкая прозрачность для вложенности
     .attr("stroke", "#fff");
 
-  // Добавляем текст для рубрик (заголовки)
-  treemapG.selectAll(".category-label")
-    .data(nodes.filter(d => d.depth === 1))
+  // Узлы-родители (имеют детей) - заголовок слева сверху
+  treemapG.selectAll(".parent-label")
+    .data(nodes.filter(d => d.children))
     .join("text")
-    .attr("x", d => d.x0 + 5)
-    .attr("y", d => d.y0 + 20)
-    .text(d => d.data.name)
-    .attr("font-size", "14px")
-    .style("pointer-events", "none")
-    .style("display", function(d) {
-      const availableWidth = d.x1 - d.x0 - 10;
-      const textWidth = this.getComputedTextLength();
-      return textWidth > availableWidth ? "none" : "block";
-    });
-  
-  // Текст подрубрик
-  treemapG.selectAll(".subcategory-label")
-    .data(nodes.filter(d => d.depth === 2))
-    .join("text")
-    .attr("class", "subcategory-label")
-    .attr("x", d => (d.x0 + d.x1) / 2) // Центр по X
-    .attr("y", d => (d.y0 + d.y1) / 2 + 4) // Центр по Y
+    .attr("class", "parent-label")
+    .attr("x", d => d.x0 + 4)
+    .attr("y", d => d.y0 + 13)
     .text(d => d.data.name)
     .attr("font-size", "12px")
     .style("pointer-events", "none")
-    .style("text-anchor", "middle") // Центровка текста
     .style("display", function(d) {
-      const w = d.x1 - d.x0;
-      const h = d.y1 - d.y0;
-      const textWidth = this.getComputedTextLength();
-      if (textWidth > w - 4 || h < 15 || w < 20) {
-        return "none";
-      }
+      return this.getComputedTextLength() > (d.x1 - d.x0 - 8) ? "none" : "block";
+    });
+  
+  // Узлы-листья (без детей, например, конкретные дела) - заголовок по центру
+  treemapG.selectAll(".leaf-label")
+    .data(nodes.filter(d => !d.children))
+    .join("text")
+    .attr("class", "leaf-label")
+    .attr("x", d => (d.x0 + d.x1) / 2)
+    .attr("y", d => (d.y0 + d.y1) / 2 + 4)
+    .text(d => d.data.name)
+    .attr("font-size", "12px")
+    .style("pointer-events", "none")
+    .style("text-anchor", "middle")
+    .style("display", function(d) {
+      if (this.getComputedTextLength() > (d.x1 - d.x0) - 4 || (d.y1 - d.y0) < 15 || (d.x1 - d.x0) < 20) return "none";
       return "block";
     });
 
-  // 2. Слой подсветки
   const highlights = highlightG.selectAll("rect")
     .data(nodes)
     .join("rect")
     .attr("x", d => d.x0)
     .attr("y", d => d.y0)
-    .attr("width", d => d.x1 - d.x0)
-    .attr("height", d => d.y1 - d.y0)
+    .attr("width", d => Math.max(0, d.x1 - d.x0))
+    .attr("height", d => Math.max(0, d.y1 - d.y0))
     .attr("fill", "#00000027")
     .attr("stroke", "red")
-    .attr("stroke-width", 4)
+    .attr("stroke-width", 2)
     .style("opacity", 0)
     .style("pointer-events", "none");
 
-  // 3. Слой взаимодействия
   hoverG.selectAll("rect")
     .data(nodes)
     .join("rect")
     .attr("x", d => d.x0)
     .attr("y", d => d.y0)
-    .attr("width", d => d.x1 - d.x0)
-    .attr("height", d => d.y1 - d.y0)
+    .attr("width", d => Math.max(0, d.x1 - d.x0))
+    .attr("height", d => Math.max(0, d.y1 - d.y0))
     .attr("fill", "transparent")
     .style("cursor", "pointer")
     .on("mouseover", (event, d) => {
-      // Все узлы с таким же именем
-      highlights
-        .filter(node => node.data.name === d.data.name)
-        .style("opacity", 1);
-
-      // Тултип
+      highlights.filter(node => node.data.name === d.data.name).style("opacity", 1);
       const svgRect = svg.node().getBoundingClientRect();
+      
       tooltip.html(`
-        ${d.data.name}<br>
-        <strong>Количество</strong> ${d.value}
+        <strong>${d.data.name}</strong><br>
+        Всего описательных статей: ${d.value}<br>
+        Вероятно подокументных: ${d.data.docsCount}<br>
+        Вероятно поединичных: ${d.data.nonDocsCount}<br>
+        Возможных дубликатов: ${d.data.dupesCount}
       `)
       .style("left", `${svgRect.left + event.offsetX}px`)
       .style("top", `${svgRect.top + event.offsetY}px`)
-      .style("opacity", 1);
+      .style("opacity", 1)
+      .style("white-space", "nowrap"); // Авторасширение по ширине контента!
     })
     .on("mousemove", (event) => {
       const svgRect = svg.node().getBoundingClientRect();

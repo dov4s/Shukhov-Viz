@@ -87,6 +87,49 @@ d3.json("data.json")
         listendButtons.push(addChartBtns[i].id);
       }
     });
+    
+    function spawnDefaultCharts() {
+
+      const defaultConfigs = [
+        { type: 'Диаграмма с накоплением по архивам', metric: 'Количество', w: '60vw', h: '45vh' },
+        { type: 'Сетевой граф по локациям', metric: 'Количество', w: '32vw', h: '45vh' },
+        
+        { type: 'Диаграмма с накоплением по архивам', metric: 'Вес', w: '60vw', h: '45vh' },
+        { type: 'Древовидная карта рубрик и подрубрик', metric: 'Количество', w: '32vw', h: '45vh' },
+        
+        { type: 'Древовидная карта архивов, фондов, описей и дел', metric: 'Количество', w: '78vw', h: '82vh' },
+        
+        { type: 'Диаграмма / Архив', metric: 'Количество', w: '23vw', h: '35vh' },
+        { type: 'Диаграмма / Вид документа', metric: 'Количество', w: '26vw', h: '35vh' },
+        { type: 'Диаграмма / Носитель', metric: 'Количество', w: '23vw', h: '35vh' }
+      ];
+
+      defaultConfigs.forEach(conf => {
+        addContainerBtn.click();
+        
+        const containers = document.getElementsByClassName('chart-container');
+        const lastConfig = containers[containers.length - 1];
+        
+        lastConfig.style.width = conf.w;
+        lastConfig.style.height = conf.h;
+        
+        const select = lastConfig.querySelector('select.chart-select');
+        const addBtn = lastConfig.querySelector('.add-chart-btn');
+        const displayDiv = lastConfig.querySelector('.selected-value');
+        
+        const targetValue = `${conf.type}||${conf.metric}`;
+        Array.from(select.options).forEach((opt, idx) => {
+            if(opt.value === targetValue) select.selectedIndex = idx;
+        });
+        
+        if (displayDiv) displayDiv.textContent = `${conf.type} / ${conf.metric}`;
+        
+        addBtn.click();
+      });
+    }
+
+    // Запускаем через небольшую задержку, чтобы DOM успел построиться
+    setTimeout(spawnDefaultCharts, 100);
   })
   .catch((err) => {
     console.error(err);
