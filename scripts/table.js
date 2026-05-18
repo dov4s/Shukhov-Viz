@@ -156,7 +156,7 @@ export function createTable(records, suggestions, onFilterCallback) {
         hide: true,
       },
       {
-        headerName: "Язык документа",
+        headerName: "Язык",
         field: "raw_language",
         filter: MultiConditionFilter,
         filterParams: { suggestions: suggestions["language"] },
