@@ -683,7 +683,12 @@ function treemapChart(data, chartMetric, g) {
     .attr("fill", "transparent")
     .style("cursor", "pointer")
     .on("mouseover", (event, d) => {
-      highlights.filter(node => node.data.name === d.data.name).style("opacity", 1);
+      if (root.height > 2) {
+        highlights.filter(node => node === d).style("opacity", 1);
+      } else {
+        highlights.filter(node => node.data.name === d.data.name).style("opacity", 1);
+      }
+      
       const svgRect = svg.node().getBoundingClientRect();
       
       tooltip.html(`
