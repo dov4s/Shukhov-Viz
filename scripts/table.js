@@ -66,7 +66,8 @@ const myTheme = themeQuartz
   });
 
 export function createTable(records, suggestions, onFilterCallback) {
-  
+  let filterDebounceTimeout;
+
   const gridOptions = {
     theme: myTheme,
     rowData: records,
@@ -226,11 +227,16 @@ export function createTable(records, suggestions, onFilterCallback) {
     ],
 
     onFilterChanged: () => {
-      if (onFilterCallback) {
-        const filtered = getFilteredRecords();
-        onFilterCallback(filtered);
-      }
+		editable: true,
+        clearTimeout(filterDebounceTimeout);
+        filterDebounceTimeout = setTimeout(() => {
+          if (onFilterCallback) {
+            const filtered = getFilteredRecords();
+            onFilterCallback(filtered);
+          }
+        }, 600); 
     },
+
     onCellValueChanged : function(params){ params.api.resetRowHeights(); },
     onFindChanged: (event) => {
       const { activeMatch, totalMatches, findSearchValue } = event;
@@ -293,12 +299,15 @@ export function createTable(records, suggestions, onFilterCallback) {
   document.getElementById("csv-btn").onclick = onBtCsv;
 
   const searchInput = document.getElementById("global-search");
+  let searchTimeout;
   searchInput.addEventListener("input", () => {
-    externalFilterText = searchInput.value.toLowerCase();
-    gridApi.onFilterChanged();
-    window.dispatchEvent(new Event('tableStateChanged'));
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      externalFilterText = searchInput.value.toLowerCase();
+      gridApi.onFilterChanged();
+      window.dispatchEvent(new Event('tableStateChanged')); 
+    }, 400);
   });
-}
 
 function getFilteredRecords() {
   const result = [];
