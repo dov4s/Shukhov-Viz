@@ -23,6 +23,11 @@ export function getYearlyWeightsCounts(records) {
           years.push(year);
         }
       });
+    } else {
+      for (let year = ABS_MIN_YEAR; year <= ABS_MAX_YEAR; year++) {
+        counter++;
+        years.push(year);
+      }
     }
 
     // Штраф для дубликатов: вес делится пополам
