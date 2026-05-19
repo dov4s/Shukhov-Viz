@@ -1,7 +1,7 @@
 import * as processData from './processData.js';
  
 const METRIC_KEYS = {
-  'Количество': 'count',
+  'Всего описательных статей': 'count',
   'Вес': 'weight',
   'Интенсивность': 'precision'
 };
