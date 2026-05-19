@@ -418,8 +418,8 @@ class DatesFilter {
   static OPERATORS = [
     { value: "=", text: "Содержит дату (равно)" },
     { value: "!=", text: "Не содержит дату (не равно)" },
-    { value: "<", text: "Раньше чем (меньше)" },
-    { value: ">", text: "Позже чем (больше)" },
+    { value: "<", text: "Раньше, чем (меньше)" },
+    { value: ">", text: "Позже, чем (больше)" },
     { value: "isEmpty", text: "Без даты" },
     { value: "isNotEmpty", text: "Есть дата" },
     { value: "isExact", text: "Точные даты" },
