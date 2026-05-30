@@ -121,6 +121,21 @@ export function createTable(records, suggestions, onFilterCallback) {
         field: "new_inventory",
 		filter: MultiConditionFilter,
 		filterParams: { suggestions: suggestions["autograph_note"] },  // Нужно просто Да/Нет
+		hide: true,
+      },
+      {
+        headerName: "Подокументное описание",
+        field: "probably_document",
+        filter: MultiConditionFilter,
+        filterParams: { suggestions: suggestions["probably_document"] },
+        hide: true,
+      },
+      {
+        headerName: "Является дубликатом",
+        field: "probably_duplicated",
+        filter: MultiConditionFilter,
+        filterParams: { suggestions: suggestions["probably_duplicated"] },
+        hide: true,
       },
       {
         headerName: "Производственный номер",
@@ -223,20 +238,6 @@ export function createTable(records, suggestions, onFilterCallback) {
         field: "conservation_status",
         filter: MultiConditionFilter,
         filterParams: {suggestions: suggestions["conservation_status"]},
-        hide: true,
-      },
-      {
-        headerName: "Подокументное описание",
-        field: "probably_document",
-        filter: MultiConditionFilter,
-        filterParams: { suggestions: suggestions["probably_document"] },
-        hide: true,
-      },
-      {
-        headerName: "Является дубликатом",
-        field: "probably_duplicated",
-        filter: MultiConditionFilter,
-        filterParams: { suggestions: suggestions["probably_duplicated"] },
         hide: true,
       },
       {
