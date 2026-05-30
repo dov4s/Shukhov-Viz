@@ -331,7 +331,7 @@ function stackedBarChart(data, chartMetric, g) {
       ticks: tickValues, domain: d3.range(minYear, maxYear + 1)
     },
     y: { label: chartMetric, grid: true },
-    color: { range: d3.schemeTableau10, domain: g.colorDomain, legend: true },
+    color: { range: d3.schemeObservable10 , domain: g.colorDomain, legend: true },
     style: { fontSize: '14px' },
   });
   g.appendChild(plot);
@@ -585,7 +585,7 @@ function treemapChart(data, chartMetric, g) {
   // ИСПОЛЬЗУЕМ СОХРАНЕННЫЙ ДОМЕН ДЛЯ СТАБИЛЬНЫХ ЦВЕТОВ!
   const colorScale = d3.scaleOrdinal()
     .domain(g.colorDomain || [])
-    .range(d3.schemeTableau10);
+    .range(d3.schemeObservable10 );
 
   const root = d3.hierarchy(data)
     .sum(d => d.value)
