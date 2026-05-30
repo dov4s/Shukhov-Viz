@@ -91,10 +91,36 @@ export function createTable(records, suggestions, onFilterCallback) {
     },
     columnDefs: [
       {
-        headerName: "Справочные данные",
-        field: "identifier",
+        headerName: "Название архива",
+        field: "archive_name",
         filter: MultiConditionFilter,
         filterParams: { suggestions: suggestions["archive_name"] },
+      },
+	  {
+        headerName: "Фонд",
+        field: "fond",
+		filter: MultiConditionFilter,
+      },
+	  {
+        headerName: "Опись",
+        field: "inventory",
+		filter: MultiConditionFilter,
+      },
+	  {
+        headerName: "Ед. хр.",
+        field: "file",
+		filter: MultiConditionFilter,
+      },
+	  {
+        headerName: "Листы/количество листов в деле",
+        field: "extent",
+		filter: MultiConditionFilter,
+      },
+	  {
+        headerName: "Опись была переработана, номера ед. хр. не совпадают",
+        field: "new_inventory",
+		filter: MultiConditionFilter,
+		filterParams: { suggestions: suggestions["autograph_note"] },  // Нужно просто Да/Нет
       },
       {
         headerName: "Производственный номер",
