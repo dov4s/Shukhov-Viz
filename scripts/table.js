@@ -107,7 +107,7 @@ export function createTable(records, suggestions, onFilterCallback) {
 		filter: MultiConditionFilter,
       },
 	  {
-        headerName: "Ед. хр.",
+        headerName: "Дело",
         field: "file",
 		filter: MultiConditionFilter,
       },
@@ -117,7 +117,7 @@ export function createTable(records, suggestions, onFilterCallback) {
 		filter: MultiConditionFilter,
       },
 	  {
-        headerName: "Опись была переработана, номера ед. хр. не совпадают",
+        headerName: "Опись была переработана, номера дел не совпадают",
         field: "new_inventory",
 		filter: MultiConditionFilter,
 		filterParams: { suggestions: suggestions["autograph_note"] },  // Нужно просто Да/Нет
