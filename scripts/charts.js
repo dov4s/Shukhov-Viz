@@ -324,7 +324,7 @@ function stackedBarChart(data, chartMetric, g) {
   let dropNaData = data.filter(d => d[METRIC_KEYS[chartMetric]] != null);
   const [minYear, maxYear] = d3.extent(dropNaData, (d) => d.year);
   const tickValues = d3.ticks(minYear, maxYear, 10);
-  const colorScheme = g.isArchive ? ARCHIVE_COLOR_SCHEME : d3.schemeObservable10;
+  const colorScheme = g.isArchive ? ARCHIVE_COLOR_SCHEME : d3.schemeDark2;
 
   const plot = Plot.barY(
     dropNaData, 
@@ -605,7 +605,7 @@ function treemapChart(data, chartMetric, g) {
     .attr("height", height)
     .style("display", "block");
 
-  const colorScheme = g.isArchive ? ARCHIVE_COLOR_SCHEME : d3.schemeObservable10;
+  const colorScheme = g.isArchive ? ARCHIVE_COLOR_SCHEME : d3.schemeDark2;
   const colorScale = d3.scaleOrdinal()
     .domain(g.colorDomain || [])
     .range(colorScheme);
