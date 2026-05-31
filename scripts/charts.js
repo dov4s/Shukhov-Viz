@@ -20,7 +20,7 @@ const ARCHIVE_COLOR_SCHEME = [
   "#b8284c",
   "#59a14f",
   "#76b7b2",
-  "#bdc027",
+  "#ffa600",
   "#a81ba8",
 ];
 
