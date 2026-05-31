@@ -6,7 +6,27 @@ const METRIC_KEYS = {
   'Интенсивность': 'precision'
 };
 
-export function draw(chartType, chartMetric, records, suggestions, g) {  
+const ARCHIVE_ORDER = [
+  "РГАНТД",
+  "ЦГИА СПб",
+  "ЦГА Москвы, ОХД до 1917 г.",
+  "Архив РАН",
+  "ЦГА Москвы, ОХНТДМ",
+  "ЦАНО",
+];
+
+const ARCHIVE_COLOR_SCHEME = [
+  "#4e79a7", // РГАНТД
+  "#76b7b2", // Архив РАН
+  "#59a14f", // ЦГА Москвы, ОХД до 1917 г.
+  "#e42756", // ЦАНО
+  "#bdc027", // ЦГА Москвы, ОХД до 1917 г.
+  "#c52ec5", // ЦГА Москвы, ОХНТДМ
+];
+
+export function draw(chartType, chartMetric, records, suggestions, g) {
+  const isArchive = chartType.toLowerCase().includes('архив');
+
   if (
     !g.data
     || (
@@ -15,6 +35,7 @@ export function draw(chartType, chartMetric, records, suggestions, g) {
     )
   ) {
     let data;
+    g.isArchive = isArchive; 
     // Линейные графики
     if (chartType === 'Линейный график') {
       data = processData.getYearlyWeightsCounts(records);
@@ -31,7 +52,7 @@ export function draw(chartType, chartMetric, records, suggestions, g) {
     else if (chartType === 'Древовидная карта архивов, фондов, описей и дел') {
       data = processData.getArchiveTreemapData(records);
       g.drawFunction = treemapChart;
-      g.colorDomain = suggestions['archive_name']; 
+      g.colorDomain = ARCHIVE_ORDER; 
       treemapChart(data, chartMetric, g);
     }
     // Диаграммы с накоплением
@@ -98,7 +119,7 @@ export function draw(chartType, chartMetric, records, suggestions, g) {
         records, suggestions, 'archive_name'
       );
       g.drawFunction = stackedBarChart;
-      g.colorDomain = suggestions['archive_name'];
+      g.colorDomain = ARCHIVE_ORDER;
       stackedBarChart(data, chartMetric, g);
     } else if (
       chartType === 'Накопление / Необходимость реставрации'
@@ -303,6 +324,7 @@ function stackedBarChart(data, chartMetric, g) {
   let dropNaData = data.filter(d => d[METRIC_KEYS[chartMetric]] != null);
   const [minYear, maxYear] = d3.extent(dropNaData, (d) => d.year);
   const tickValues = d3.ticks(minYear, maxYear, 10);
+  const colorScheme = g.isArchive ? ARCHIVE_COLOR_SCHEME : d3.schemeObservable10;
 
   const plot = Plot.barY(
     dropNaData, 
@@ -310,6 +332,7 @@ function stackedBarChart(data, chartMetric, g) {
       x: 'year',
       y: METRIC_KEYS[chartMetric],
       fill: 'key',
+      order: g.colorDomain,
       channels: {
         "Всего описательных статей": "count",
         "Вероятно подокументных": "docs",
@@ -331,7 +354,7 @@ function stackedBarChart(data, chartMetric, g) {
       ticks: tickValues, domain: d3.range(minYear, maxYear + 1)
     },
     y: { label: chartMetric, grid: true },
-    color: { range: d3.schemeObservable10 , domain: g.colorDomain, legend: true },
+    color: { range: colorScheme , domain: g.colorDomain, legend: true },
     style: { fontSize: '14px' },
   });
   g.appendChild(plot);
@@ -582,10 +605,10 @@ function treemapChart(data, chartMetric, g) {
     .attr("height", height)
     .style("display", "block");
 
-  // ИСПОЛЬЗУЕМ СОХРАНЕННЫЙ ДОМЕН ДЛЯ СТАБИЛЬНЫХ ЦВЕТОВ!
+  const colorScheme = g.isArchive ? ARCHIVE_COLOR_SCHEME : d3.schemeObservable10;
   const colorScale = d3.scaleOrdinal()
     .domain(g.colorDomain || [])
-    .range(d3.schemeObservable10 );
+    .range(colorScheme);
 
   const root = d3.hierarchy(data)
     .sum(d => d.value)
