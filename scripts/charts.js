@@ -16,12 +16,12 @@ const ARCHIVE_ORDER = [
 ];
 
 const ARCHIVE_COLOR_SCHEME = [
-  "#4e79a7", // РГАНТД
-  "#76b7b2", // Архив РАН
-  "#59a14f", // ЦГА Москвы, ОХД до 1917 г.
-  "#e42756", // ЦАНО
-  "#bdc027", // ЦГА Москвы, ОХД до 1917 г.
-  "#c52ec5", // ЦГА Москвы, ОХНТДМ
+  "#4e79a7",
+  "#b8284c",
+  "#59a14f",
+  "#76b7b2",
+  "#bdc027",
+  "#a81ba8",
 ];
 
 export function draw(chartType, chartMetric, records, suggestions, g) {
