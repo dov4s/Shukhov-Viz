@@ -101,6 +101,7 @@ def parse_card_metadata(
 async def scrape_and_write_cards_from_single_list_page(
         session: aiohttp.ClientSession,
         sem: asyncio.Semaphore,
+        lock: asyncio.Lock,
         list_page_url: str,
         list_page_params: dict[str, int],
         all_metadata: list,
@@ -129,9 +130,12 @@ async def scrape_and_write_cards_from_single_list_page(
     for task in tasks:
         all_metadata.append(parse_card_metadata(*task.result()))
 
+    print(f'Cards scraped: {len(all_metadata)}', end='\r')
+
     # rewrite json with new result
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(all_metadata, f, indent=2, ensure_ascii=False)
+    async with lock:
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(all_metadata, f, indent=2, ensure_ascii=False)
 
 async def scrape(
         list_page_url=CARD_LIST_URL,
@@ -144,7 +148,8 @@ async def scrape(
         ):
 
     async with aiohttp.ClientSession(headers=headers) as session:
-        sem = asyncio.Semaphore(semaphore_value)
+        sem = asyncio.Semaphore(semaphore_value)  # to limit the number of tasks
+        lock = asyncio.Lock()  # to avoid conflicts when writing to a file
 
         all_metadata = []  # all scraped matadata
 
@@ -158,9 +163,12 @@ async def scrape(
                     scrape_and_write_cards_from_single_list_page(
                         session,
                         sem,
+                        lock,
                         list_page_url,
                         list_page_params,
                         all_metadata,
                         filename,
                     )
                 )
+
+    return all_metadata
