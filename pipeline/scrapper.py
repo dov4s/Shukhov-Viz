@@ -74,13 +74,13 @@ async def get_card_page(
     except Exception as e:
         print(url)
 
-def parse_card_page_for_metadata(
+def parse_card_metadata(
         url: str,
         response_text: str,
-        ) -> dict[str, list[str]]:
+        ) -> dict[str, list]:
     """
-    Gets card metadata (attributes) from a card page. Number of attributes and
-    values might be different for each card
+    Gets card metadata (attributes) from a card page (number of attributes and
+    values might be different for each card)
     """
 
     soup = BeautifulSoup(response_text, 'html.parser')
@@ -90,14 +90,51 @@ def parse_card_page_for_metadata(
     for attribute in attributes:
         name = attribute.get_text().strip()
         value = attribute.find_next_siblings()[1].get_text().strip()
+
         # there are attributes that have more than one value
         result.setdefault(name, []).append(value)
 
-    result.update({'url': [url]})  # is listed for an output unification
+    result.update({'url': [url]})  # url is listed for an output unification
+
     return result
 
+async def scrape_and_write_cards_from_single_list_page(
+        session: aiohttp.ClientSession,
+        sem: asyncio.Semaphore,
+        list_page_url: str,
+        list_page_params: dict[str, int],
+        all_metadata: list,
+        filename: str,
+        ) -> None:
+    """
+    Gets a card list page. Parses card urls from the card list page.
+    Gets each card with parsed urls. Parses and writes down their matadata
+    into a .json file
+    """
+    list_page = await get_list_page(
+        session,
+        sem, 
+        list_page_url,
+        list_page_params
+        )
+    card_urls = parse_list_page_for_urls(list_page)
+
+    async with asyncio.TaskGroup() as group:
+        tasks = [
+            group.create_task(get_card_page(session, sem, card_url))
+            for card_url in card_urls
+        ]
+
+    # add all cards from the list page to result
+    for task in tasks:
+        all_metadata.append(parse_card_metadata(*task.result()))
+
+    # rewrite json with new result
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(all_metadata, f, indent=2, ensure_ascii=False)
+
 async def scrape(
-        url=CARD_LIST_URL,
+        list_page_url=CARD_LIST_URL,
         first_page=PAGE,
         last_page=N_OF_PAGES,
         page_size=PAGE_SIZE,
@@ -109,39 +146,21 @@ async def scrape(
     async with aiohttp.ClientSession(headers=headers) as session:
         sem = asyncio.Semaphore(semaphore_value)
 
-        result = []
+        all_metadata = []  # all scraped matadata
 
         async with asyncio.TaskGroup() as group:
-            get_list_page_tasks = [
+            for list_page_params in generate_params_for_list_pages(
+                first_page,
+                last_page,
+                page_size,
+            ):
                 group.create_task(
-                    get_list_page(session, sem, url, params)
+                    scrape_and_write_cards_from_single_list_page(
+                        session,
+                        sem,
+                        list_page_url,
+                        list_page_params,
+                        all_metadata,
+                        filename,
                     )
-                for params in generate_params_for_list_pages(
-                    first_page, last_page, page_size
-                    )
-                ]
-
-        list_pages = [task.result() for task in get_list_page_tasks]
-
-        for list_page in list_pages:
-            card_urls = parse_list_page_for_urls(list_page)
-            async with asyncio.TaskGroup() as group:
-                get_card_page_tasks = [
-                    group.create_task(
-                        get_card_page(session, sem, url, params=None)
-                    )
-                    for url in card_urls
-                ]
-
-            result.extend([
-                parse_card_page_for_metadata(*task.result())
-                for task in get_card_page_tasks
-                ])
-            
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump(
-                    result,
-                    f,
-                    indent=2, 
-                    ensure_ascii=False
                 )
