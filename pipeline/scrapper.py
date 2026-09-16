@@ -5,15 +5,6 @@ import json
 import aiohttp
 from bs4 import BeautifulSoup
 
-BASE_URL = 'https://rgantd.kaisa.ru'
-CARD_LIST_URL = 'https://rgantd.kaisa.ru/type/SHUHOV'
-N_OF_PAGES = 0
-PAGE = 1
-PAGE_SIZE = 5
-LIST_URL_PARAMS = {'pageSize': PAGE_SIZE, 'page171446530': PAGE}
-HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux i686; rv:124.0) Gecko/20100101 Firefox/124.0'}
-SEMAPHORE_VALUE = 1
-SAVE_FILENAME = 'test_raw_data.json'
 
 async def get_list_page(
         session: aiohttp.ClientSession,
@@ -35,7 +26,7 @@ def list_page_has_no_result(soup):
     else:
         return False
 
-def parse_list_page_for_urls(response_text) -> list[str] | None:
+def parse_list_page_for_urls(base_url, response_text) -> list[str] | None:
     """
     Gets url for each card on a list page from buttons
     if there is a list page
@@ -48,7 +39,7 @@ def parse_list_page_for_urls(response_text) -> list[str] | None:
         descripton_buttons = soup.find_all(
             'a', {'class': 'btn-description'}, href=True)
         card_urls = [
-            f'{BASE_URL}{button['href'].strip()}'
+            f'{base_url}{button['href'].strip()}'
             for button in descripton_buttons
             ]
 
@@ -102,9 +93,10 @@ async def scrape_and_write_cards_from_single_list_page(
         session: aiohttp.ClientSession,
         sem: asyncio.Semaphore,
         lock: asyncio.Lock,
+        base_url,
         list_page_url: str,
         list_page_params: dict[str, int],
-        all_metadata: list,
+        scraped_metadata: list,
         filename: str,
         ) -> None:
     """
@@ -117,9 +109,10 @@ async def scrape_and_write_cards_from_single_list_page(
         sem, 
         list_page_url,
         list_page_params
-        )
-    card_urls = parse_list_page_for_urls(list_page)
+    )
+    card_urls = parse_list_page_for_urls(base_url, list_page)
 
+    # get all card pages
     async with asyncio.TaskGroup() as group:
         tasks = [
             group.create_task(get_card_page(session, sem, card_url))
@@ -128,47 +121,58 @@ async def scrape_and_write_cards_from_single_list_page(
 
     # add all cards from the list page to result
     for task in tasks:
-        all_metadata.append(parse_card_metadata(*task.result()))
+        scraped_metadata.append(parse_card_metadata(*task.result()))
 
-    print(f'Cards scraped: {len(all_metadata)}', end='\r')
+    print(f'Cards scraped: {len(scraped_metadata)}', end='\r')
 
     # rewrite json with new result
     async with lock:
         with open(filename, 'w', encoding='utf-8') as f:
-            json.dump(all_metadata, f, indent=2, ensure_ascii=False)
+            json.dump(scraped_metadata, f, indent=2, ensure_ascii=False)
 
-async def scrape(
-        list_page_url=CARD_LIST_URL,
-        first_page=PAGE,
-        last_page=N_OF_PAGES,
-        page_size=PAGE_SIZE,
-        headers=HEADERS,
-        filename=SAVE_FILENAME,
-        semaphore_value=SEMAPHORE_VALUE
-        ):
 
-    async with aiohttp.ClientSession(headers=headers) as session:
-        sem = asyncio.Semaphore(semaphore_value)  # to limit the number of tasks
-        lock = asyncio.Lock()  # to avoid conflicts when writing to a file
+class Scraper:
+    _base_url: str = 'https://rgantd.kaisa.ru'
+    _headers: dict = {'User-Agent': 'Mozilla/5.0 (X11; Linux i686; rv:124.0) Gecko/20100101 Firefox/124.0'}
 
-        all_metadata = []  # all scraped matadata
+    def __init__(
+            self,
+            list_page_url: str = 'https://rgantd.kaisa.ru/type/SHUHOV',
+            first_page: int = 1,
+            last_page: int = 14,
+            page_size: int = 100,
+            filename: str = 'raw_data.json',
+            number_of_tasks: int = 30,
+            scraped_metadata: list = [],  # all scraped matadata
+            ) -> None:
+        self.list_page_url = list_page_url
+        self.first_page = first_page
+        self.last_page = last_page
+        self.page_size = page_size
+        self.filename = filename
+        self.number_of_tasks = number_of_tasks
+        self.scraped_metadata = scraped_metadata
+ 
+    async def scrape(self):
+        async with aiohttp.ClientSession(headers=self._headers) as session:
+            sem = asyncio.Semaphore(self.number_of_tasks)  # to limit the number of tasks
+            lock = asyncio.Lock()  # to avoid conflicts when writing to a file
 
-        async with asyncio.TaskGroup() as group:
-            for list_page_params in generate_params_for_list_pages(
-                first_page,
-                last_page,
-                page_size,
-            ):
-                group.create_task(
-                    scrape_and_write_cards_from_single_list_page(
-                        session,
-                        sem,
-                        lock,
-                        list_page_url,
-                        list_page_params,
-                        all_metadata,
-                        filename,
+            async with asyncio.TaskGroup() as group:
+                for list_page_params in generate_params_for_list_pages(
+                    self.first_page,
+                    self.last_page,
+                    self.page_size,
+                ):
+                    group.create_task(
+                        scrape_and_write_cards_from_single_list_page(
+                            session,
+                            sem,
+                            lock,
+                            self._base_url,
+                            self.list_page_url,
+                            list_page_params,
+                            self.scraped_metadata,
+                            self.filename,
+                        )
                     )
-                )
-
-    return all_metadata
