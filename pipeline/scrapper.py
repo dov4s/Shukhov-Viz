@@ -39,7 +39,7 @@ def parse_list_page_for_urls(base_url, response_text) -> list[str] | None:
         descripton_buttons = soup.find_all(
             'a', {'class': 'btn-description'}, href=True)
         card_urls = [
-            f'{base_url}{button['href'].strip()}'
+            f"{base_url}{button['href'].strip()}"
             for button in descripton_buttons
             ]
 
@@ -143,7 +143,7 @@ class Scraper:
             page_size: int = 100,
             filename: str = 'raw_data.json',
             number_of_tasks: int = 30,
-            scraped_metadata: list = [],  # all scraped matadata
+            scraped_metadata: None | list = None,  # all scraped metadata
             ) -> None:
         self.list_page_url = list_page_url
         self.first_page = first_page
@@ -151,9 +151,14 @@ class Scraper:
         self.page_size = page_size
         self.filename = filename
         self.number_of_tasks = number_of_tasks
-        self.scraped_metadata = scraped_metadata
+
+        # default value is None to avoid mutable default value
+        if scraped_metadata == None:
+            self.scraped_metadata = []
+        else: 
+            self.scraped_metadata = scraped_metadata
  
-    async def scrape(self):
+    async def scrape(self) -> None:
         async with aiohttp.ClientSession(headers=self._headers) as session:
             sem = asyncio.Semaphore(self.number_of_tasks)  # to limit the number of tasks
             lock = asyncio.Lock()  # to avoid conflicts when writing to a file
