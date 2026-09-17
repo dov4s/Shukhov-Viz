@@ -12,9 +12,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 class Scraper:
     _base_url: str = 'https://rgantd.kaisa.ru'
-    _headers: dict = {'User-Agent': 'Mozilla/5.0 (X11; Linux i686; rv:124.0) Gecko/20100101 Firefox/124.0'}
+    _headers: dict = {'User-Agent': 'Mozilla/5.0'}
     _session: aiohttp.ClientSession | None = None
     _sem: asyncio.Semaphore | None = None
 
@@ -29,7 +30,7 @@ class Scraper:
             number_of_tasks: int = 5,
             scraped_metadata: None | list = None,
             ) -> None:
-        self.base_listing_page_url = base_listing_page_url 
+        self.base_listing_page_url = base_listing_page_url
         self.first_page = first_page
         self.last_page = last_page
         self.page_size = page_size
@@ -38,9 +39,9 @@ class Scraper:
         self.number_of_tasks = number_of_tasks
 
         # default value is None to avoid mutable default value
-        if scraped_metadata == None:
+        if scraped_metadata is None:
             self.scraped_metadata = []
-        else: 
+        else:
             self.scraped_metadata = scraped_metadata
 
     def write_metadata(self):
@@ -80,28 +81,31 @@ class Scraper:
             return card_urls
 
     def _generate_params(self) -> list[dict[str, int]]:
-        """Generates list of url params for list pages""" 
+        """Generates list of url params for list pages"""
         if self.last_page < self.first_page:
             logger.warning(
                 'first_page is bigger than last_page. Scraping only first_page'
             )
             self.last_page = self.first_page
 
-        logger.info(f'Scraping pages from {self.first_page} to {self.last_page}...')
+        logger.info(
+            f'Scraping pages from {self.first_page} to {self.last_page}...'
+        )
 
         return [
             {'pageSize': self.page_size, 'page171446530': page}
             for page in range(self.first_page, self.last_page+1)
             ]
-        
+
     def _parse_card_metadata(
             self,
             card_url: str,
             response_text: str,
             ) -> dict[str, list]:
         """
-        Gets card metadata from a card page (number of attributes might be different
-        for each card, and number of values might be different for each attribute)
+        Gets card metadata from a card page (number of attributes might be
+        different for each card, and number of values might be different for
+        each attribute)
         """
 
         soup = BeautifulSoup(response_text, 'html.parser')
@@ -117,7 +121,8 @@ class Scraper:
                 result.setdefault(name, []).append(value)
         except Exception:
             logger.exception(
-                f'Error parsing card attributes: {card_url}. Length: {length}'
+                f'Error parsing card attributes: {card_url}. Length: {
+                    len(result)}'
             )
         result.update({'url': [card_url]})  # list for an output unification
 
@@ -132,7 +137,7 @@ class Scraper:
             ) -> str:
         """Async function to get page with cards"""
         try:
-            asyncio.sleep(random.randint(1,3))
+            asyncio.sleep(random.randint(1, 3))
             async with self._sem, self._session.get(
                 self.base_listing_page_url, params=params
             ) as response:
@@ -148,7 +153,7 @@ class Scraper:
             ) -> tuple[str, str] | None:
         """Async function to get page with card metadata"""
         try:
-            asyncio.sleep(random.randint(1,3))
+            asyncio.sleep(random.randint(1, 3))
             async with self._sem, self._session.get(card_url) as response:
                 return (card_url, await response.text())
         except Exception:
@@ -191,7 +196,7 @@ class Scraper:
                 self._parse_card_metadata(*task.result())
             )
 
-        # Log progress with approximate number of cards 
+        # Log progress with approximate number of cards
         # (although it's possible to parse an exact value)
         logger.info(
             f'Scraped cards: {
@@ -202,15 +207,15 @@ class Scraper:
         )
 
     async def scrape(self) -> None:
-            """
-            Scrapes card metadata with scrape_single_listing_page() for each 
-            page in range from first_page to last_page + 1
-            """
-            async with aiohttp.ClientSession(headers=self._headers) as session:
-                self._session = session
-                self._sem = asyncio.Semaphore(self.number_of_tasks)
-                async with asyncio.TaskGroup() as group:
-                    for listing_page_params in self._generate_params():
-                        group.create_task(
-                            self._scrape_single_listing_page(listing_page_params)
-                        )
+        """
+        Scrapes card metadata with scrape_single_listing_page() for each
+        page in range from first_page to last_page + 1
+        """
+        async with aiohttp.ClientSession(headers=self._headers) as session:
+            self._session = session
+            self._sem = asyncio.Semaphore(self.number_of_tasks)
+            async with asyncio.TaskGroup() as group:
+                for listing_page_params in self._generate_params():
+                    group.create_task(
+                        self._scrape_single_listing_page(listing_page_params)
+                    )
