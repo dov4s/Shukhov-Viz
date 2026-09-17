@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class Scraper:
+    """
+    RGANTD catalog scraper. Intentionally overengineered for educational 
+    purposes, but functional
+    """
     _base_url: str = 'https://rgantd.kaisa.ru'
     _headers: dict = {'User-Agent': 'Mozilla/5.0'}
     _session: aiohttp.ClientSession | None = None
@@ -23,11 +27,11 @@ class Scraper:
             self,
             base_listing_page_url: str = 'https://rgantd.kaisa.ru/type/SHUHOV',
             first_page: int = 1,
-            last_page: int = 14,
-            page_size: int = 100,
+            last_page: int = 68,
+            page_size: int = 20,
             _params_list: None | list[dict] = None,  # special func to generate
             filename: str = 'raw_data.json',
-            number_of_tasks: int = 5,
+            __number_of_tasks: int = 2,  # do not change
             scraped_metadata: None | list = None,
             ) -> None:
         self.base_listing_page_url = base_listing_page_url
@@ -36,7 +40,7 @@ class Scraper:
         self.page_size = page_size
         self._params_list = _params_list
         self.filename = filename
-        self.number_of_tasks = number_of_tasks
+        self.__number_of_tasks = __number_of_tasks
 
         # default value is None to avoid mutable default value
         if scraped_metadata is None:
@@ -137,7 +141,7 @@ class Scraper:
             ) -> str:
         """Async function to get page with cards"""
         try:
-            asyncio.sleep(random.randint(1, 3))
+            await asyncio.sleep(random.uniform(2.5, 6))
             async with self._sem, self._session.get(
                 self.base_listing_page_url, params=params
             ) as response:
@@ -153,7 +157,7 @@ class Scraper:
             ) -> tuple[str, str] | None:
         """Async function to get page with card metadata"""
         try:
-            asyncio.sleep(random.randint(1, 3))
+            await asyncio.sleep(random.uniform(2.5, 6))
             async with self._sem, self._session.get(card_url) as response:
                 return (card_url, await response.text())
         except Exception:
@@ -213,7 +217,7 @@ class Scraper:
         """
         async with aiohttp.ClientSession(headers=self._headers) as session:
             self._session = session
-            self._sem = asyncio.Semaphore(self.number_of_tasks)
+            self._sem = asyncio.Semaphore(self.__number_of_tasks)
             async with asyncio.TaskGroup() as group:
                 for listing_page_params in self._generate_params():
                     group.create_task(
