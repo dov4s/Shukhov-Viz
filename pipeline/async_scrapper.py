@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class Scraper:
     """
-    RGANTD catalog scraper. Intentionally overengineered for educational 
+    RGANTD catalog scraper. Intentionally overengineered for educational
     purposes, but functional
     """
     _base_url: str = 'https://rgantd.kaisa.ru'
@@ -141,12 +141,16 @@ class Scraper:
             ) -> str:
         """Async function to get page with cards"""
         try:
-            await asyncio.sleep(random.uniform(2.5, 6))
-            async with self._sem, self._session.get(
-                self.base_listing_page_url, params=params
-            ) as response:
-                logger.debug(f'Fetched listing page: {params}')
-                return await response.text()
+            async with self._sem:  # sleep in sem after response
+                async with self._session.get(
+                    self.base_listing_page_url, params=params
+                ) as response:
+                    response_text = await response.text()
+
+                await asyncio.sleep(random.uniform(2.5, 6))
+
+                logger.debug(f'Fetched a listing page: {params}')
+                return response_text
         except Exception:
             logger.exception(f'Failed to get list page: {params}')
             raise  # TaskGroup will stop everything
@@ -157,13 +161,17 @@ class Scraper:
             ) -> tuple[str, str] | None:
         """Async function to get page with card metadata"""
         try:
-            await asyncio.sleep(random.uniform(2.5, 6))
-            async with self._sem, self._session.get(card_url) as response:
-                return (card_url, await response.text())
+            async with self._sem:  # sleep in sem after response
+                async with self._session.get(card_url) as response:
+                    response_text = await response.text()
+
+                await asyncio.sleep(random.uniform(2.5, 6))
+
+                logger.debug(f'Fetched a card page: {card_url}')
+                return (card_url, response_text)
         except Exception:
             logger.exception(f'Failed to get a card page: {card_url}')
             raise  # TaskGroup will stop everything
-        logger.debug(f'Fetched card page: {card_url}')
 
     async def _scrape_single_listing_page(
             self,
