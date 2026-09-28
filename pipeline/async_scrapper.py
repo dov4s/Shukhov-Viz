@@ -31,7 +31,7 @@ class Scraper:
             page_size: int = 20,
             _params_list: None | list[dict] = None,  # special func to generate
             filename: str = 'raw_data.json',
-            __number_of_tasks: int = 2,  # do not change
+            number_of_concurrent_requests: int = 1,
             scraped_metadata: None | list = None,
             ) -> None:
         self.base_listing_page_url = base_listing_page_url
@@ -40,7 +40,7 @@ class Scraper:
         self.page_size = page_size
         self._params_list = _params_list
         self.filename = filename
-        self.__number_of_tasks = __number_of_tasks
+        self.number_of_concurrent_requests = number_of_concurrent_requests
 
         # default value is None to avoid mutable default value
         if scraped_metadata is None:
@@ -225,7 +225,7 @@ class Scraper:
         """
         async with aiohttp.ClientSession(headers=self._headers) as session:
             self._session = session
-            self._sem = asyncio.Semaphore(self.__number_of_tasks)
+            self._sem = asyncio.Semaphore(self.number_of_concurrent_requests)
             async with asyncio.TaskGroup() as group:
                 for listing_page_params in self._generate_params():
                     group.create_task(
