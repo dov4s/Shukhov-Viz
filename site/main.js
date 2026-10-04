@@ -4,6 +4,7 @@ import { createTable, getGridApi, applyTableState } from './scripts/table.js';
 
 spawnChart();
 
+// Utility function to limit the rate at which a function can fire, preventing performance issues
 function debounce(func, wait) {
   let timeout;
   return function executedFunction(...args) {
@@ -13,6 +14,7 @@ function debounce(func, wait) {
   };
 }
 
+// Retrieves and decodes the saved dashboard state (filters, charts) from the URL search parameters
 function getUrlState() {
   const params = new URLSearchParams(window.location.search);
   const s = params.get('s');
@@ -25,6 +27,7 @@ function getUrlState() {
   }
 }
 
+// Encodes the current state of the global search, visible charts, and table filters into a Base64 string and updates the URL
 function updateUrlState() {
   const gridApi = getGridApi();
   const state = {
@@ -62,6 +65,7 @@ const debouncedUpdateUrl = debounce(updateUrlState, 500);
 window.addEventListener('tableStateChanged', debouncedUpdateUrl);
 window.addEventListener('chartStateChanged', debouncedUpdateUrl);
 
+// Adds a new chart group ('g' element) to the specified container or replaces the existing one
 function addChart(chartContainer, records, suggestions) {
   if (chartContainer.children.length !==2) {
     const g = document.createElement('div');
@@ -99,6 +103,7 @@ d3.json("data.json")
       drawAllCharts(filtered, suggestions);
       debouncedUpdateUrl();
     });
+    // Renders all charts sequentially using requestAnimationFrame to prevent the UI from freezing
     function drawAllCharts(filtered, suggestions) {
       const chartContainers = Array.from(document.getElementsByClassName("g"));
       let i = 0;
@@ -128,6 +133,7 @@ d3.json("data.json")
     
     const listendButtons = [];
 
+    // Attaches listeners to newly spawned "Add Chart" buttons without duplicating listeners on old ones
     const addContainerBtn = document.getElementById('add-chart-container-btn');
     addContainerBtn.addEventListener('click', function () {
       const addChartBtns = document.getElementsByClassName('add-chart-btn');
@@ -146,7 +152,8 @@ d3.json("data.json")
         listendButtons.push(addChartBtns[i].id);
       }
     });
-    
+
+    // Populates the dashboard with a default set of charts if the user opens the page without a saved URL state
     function spawnDefaultCharts() {
       const urlState = getUrlState();
       let configsToSpawn = [];

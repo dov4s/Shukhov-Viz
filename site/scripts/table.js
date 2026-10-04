@@ -1,14 +1,3 @@
-/*
-Таблица AgGrid с кастомными фильтрами для двух типов данных: 
-json-объектов с датами вида {start, end, certainty} и  обычных тектовых полей.
-+ возможность убирать и добавлять столбцы, разворачивать и сворачивать строки,
-
-
-Proof of concept :)
-Почти весь код в этом файле написан чат-ботами и(или) является одним большим
-костылём из костылей.
-*/
-
 let gridApi = null;
 let externalFilterText = "";
 
@@ -65,6 +54,7 @@ const myTheme = themeQuartz
     wrapperBorderRadius: 2
   });
 
+// Initializes the main AG-Grid table with data, specific column definitions, and custom filters
 export function createTable(records, suggestions, onFilterCallback) {
   let filterDebounceTimeout;
 
@@ -254,14 +244,15 @@ export function createTable(records, suggestions, onFilterCallback) {
     ],
 
     onFilterChanged: () => {
-		editable: true,
-        clearTimeout(filterDebounceTimeout);
-        filterDebounceTimeout = setTimeout(() => {
-          if (onFilterCallback) {
-            const filtered = getFilteredRecords();
-            onFilterCallback(filtered);
-          }
-        }, 600); 
+      editable: true,
+      // Debounces the filter callback to avoid spamming updates while the user is typing in filters
+      clearTimeout(filterDebounceTimeout);
+      filterDebounceTimeout = setTimeout(() => {
+        if (onFilterCallback) {
+          const filtered = getFilteredRecords();
+          onFilterCallback(filtered);
+        }
+      }, 600); 
     },
 
     onCellValueChanged : function(params){ params.api.resetRowHeights(); },
@@ -337,6 +328,7 @@ export function createTable(records, suggestions, onFilterCallback) {
   });
 }
 
+// Extracts the currently filtered records from the AG-Grid instance
 function getFilteredRecords() {
   const result = [];
   if (!gridApi) return result;
@@ -345,6 +337,7 @@ function getFilteredRecords() {
   return result;
 }
 
+// Custom cell renderer allowing users to click a cell to expand/collapse its text content
 function expandableCellRenderer(params) {
   const span = document.createElement('span');
   span.classList.add('cell-content');
@@ -359,6 +352,7 @@ function expandableCellRenderer(params) {
   return span;
 }
 
+// Binds event listeners to the global radio buttons to expand/collapse all rows in the table at once
 function bindGlobalExpandControls(gridContainer) {
   const radios = document.getElementsByName('row-expand-mode');
   
@@ -379,6 +373,7 @@ function bindGlobalExpandControls(gridContainer) {
 
 function onBtCsv() { gridApi.exportDataAsCsv({ columnSeparator: "," }); }
 
+// Converts the custom date objects into a comparable min/max range
 function getDateObjectAsInterval(dateObject) {
     if (!dateObject || typeof dateObject !== "object") return {
       min: -Infinity, max: Infinity 
@@ -398,6 +393,7 @@ function getDateObjectAsInterval(dateObject) {
     }
 }
 
+// Adds checkboxes to toggle table columns' visibility
 function initColumnChooser(gridApi) {
   const container = document.getElementById("column-chooser");
   if (!container || !gridApi) return;
@@ -440,7 +436,7 @@ function initColumnChooser(gridApi) {
   });
 }
 
-
+// Custom AG-Grid filter class handling complex date ranges, exact/inexact dates, and before/after conditions
 class DatesFilter {
   static OPERATORS = [
     { value: "=", text: "Содержит дату (равно)" },
@@ -751,6 +747,7 @@ class DatesFilter {
   destroy() { }
 }
 
+// Custom AG-Grid filter class providing multiple conditions (AND/OR) with text suggestions and autocomplete mechanics
 class MultiConditionFilter {
   static OPERATORS = [
     { value: "contains", text: "Содержит" },
@@ -1054,6 +1051,7 @@ export function getGridApi() {
   return gridApi;
 }
 
+// Restores table visibility, global search, and filter states from the URL state object
 export function applyTableState(state) {
   if (!gridApi || !state) return;
   

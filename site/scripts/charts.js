@@ -24,9 +24,12 @@ const ARCHIVE_COLOR_SCHEME = [
   "#a81ba8",
 ];
 
+// Contains a large block to determine data processing and rendering logic
+// based on the user's selected chart type
 export function draw(chartType, chartMetric, records, suggestions, g) {
   const isArchive = chartType.toLowerCase().includes('архив');
 
+  // Checks if data needs to be recalculated (prevents unnecessary processing if data/type hasn't changed)
   if (
     !g.data
     || (
@@ -281,9 +284,9 @@ export function draw(chartType, chartMetric, records, suggestions, g) {
   } else {
     g.drawFunction(g.data, chartMetric, g);
   }
-}
+}  // spaghetti code at it's finest
 
-// функции переделаны с ИИ
+// Renders a line chart using the Observable Plot library
 function lineChart(data, chartMetric, g) {
   g.innerHTML = '';
   const plot = Plot.lineY(
@@ -318,6 +321,7 @@ function lineChart(data, chartMetric, g) {
   g.appendChild(plot);
 }
 
+// Renders a stacked bar chart using the Observable Plot library
 function stackedBarChart(data, chartMetric, g) {
   g.innerHTML = '';
 
@@ -360,6 +364,7 @@ function stackedBarChart(data, chartMetric, g) {
   g.appendChild(plot);
 }
 
+// Renders a horizontal bar chart using the Observable Plot library
 function barChart(data, chartMetric, g) {
   g.innerHTML = '';
 
@@ -402,6 +407,7 @@ function barChart(data, chartMetric, g) {
   g.appendChild(plot);
 }
 
+// Renders a highly interactive force-directed network graph using pure D3.js
 function networkChart(data, chartMetric, g) {
   g.innerHTML = '';
 
@@ -531,7 +537,7 @@ function networkChart(data, chartMetric, g) {
     .force("y", d3.forceY(height / 2).strength(0.7))
     .stop();
 
-  // Статический пре-рендер
+  // Статический пре-рендер на 300 тиков, чтобы ноды разползлись до отключения симуляции
   const ticks = 300; 
   for (let i = 0; i < ticks; ++i) simulation.tick();
 
@@ -554,7 +560,7 @@ function networkChart(data, chartMetric, g) {
        return d.y + 5 + d.size / 2; 
     });
 
-  // Zoom / Pan
+  // Зум / Pan
   const zoom = d3.zoom()
     .scaleExtent([0.1, 5])
     .on("zoom", (event) => {
@@ -563,7 +569,7 @@ function networkChart(data, chartMetric, g) {
 
   svg.call(zoom);
 
-  // Функция авто-зума (Fit to view)
+  // Функция авто-зума
   function fitGraphToView() {
     const bounds = zoomableG.node().getBBox();
     const parent = svg.node().getBoundingClientRect();
@@ -577,7 +583,7 @@ function networkChart(data, chartMetric, g) {
     const midX = x + bWidth / 2;
     const midY = y + bHeight / 2;
     
-    // Вычисляем масштаб с небольшим отступом (0.9)
+    // Вычисляем масштаб с отступом 0.9
     const scale = 0.9 / Math.max(bWidth / fullWidth, bHeight / fullHeight);
     const translate = [
       fullWidth / 2 - scale * midX,
@@ -587,11 +593,10 @@ function networkChart(data, chartMetric, g) {
     svg.call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale));
   }
 
-  // Вызываем автозум после отрисовки
   fitGraphToView();
 }
 
-// Gemini + редактирование
+// Renders a hierarchical treemap using pure D3.js with custom layout rules and tooltips
 function treemapChart(data, chartMetric, g) {
   g.innerHTML = '';
   g.style.position = 'relative';

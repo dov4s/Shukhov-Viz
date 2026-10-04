@@ -12,7 +12,7 @@ export function spawnChart(){
 		const btns = document.createElement('div');
 		btns.setAttribute('class', 'chart-btns');
 
-		// кастомный селект (много тупого копипаста из ChatGPT)
+		// Builds a complex custom multi-level dropdown menu for chart selection manually via DOM manipulation
 		const wrapper = document.createElement('div');
 		wrapper.className = 'chart-select custom-select';
 		btns.appendChild(wrapper);
@@ -99,7 +99,7 @@ export function spawnChart(){
 			},
 		};
 
-		// визуал селекта (тупой копипаст из chatGPT)
+		// визуал селекта
 		for (const [topLabel, types] of Object.entries(topChartGroups)) {
 			const topNode = document.createElement('div');
 			topNode.className = 'dropdown-item top-group';
@@ -196,8 +196,7 @@ export function spawnChart(){
 				dropdown.querySelectorAll('.submenu.open').forEach
 				(n => n.classList.remove('open')
 			);
-		});
-		// конец кастомного селекта
+		});  // end of dropdown menu code
 
 		const addChartBtn = document.createElement('button');
 		btns.appendChild(addChartBtn);

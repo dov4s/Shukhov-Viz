@@ -1,7 +1,8 @@
 const ABS_MIN_YEAR = 1854;
 const ABS_MAX_YEAR = 1937;
 
-// Вычисляет количество документов за каждый год
+// Calculates the amount of documents per year
+// Duplicate records divide their weight by half as a penalty
 export function getYearlyWeightsCounts(records) {
   const yearlyStats = {};
 
@@ -89,6 +90,7 @@ export function getYearlyWeightsCounts(records) {
   });
 }
 
+// Groups the yearly statistics by specific categories (e.g., forms, mediums) based on the provided 'type'
 export function getMultipleYearlyWeightsCounts(records, suggestions, type) {
   const fieldYearlyWeightsCounts = {};
   for (const value of suggestions[type]) {
@@ -103,6 +105,7 @@ export function getMultipleYearlyWeightsCounts(records, suggestions, type) {
     .flatMap(([key, valuesArray]) => valuesArray.map(obj => ({ ...obj, key: key })));
 }
 
+// Counts the occurrences of specific field values across the filtered records (used for Bar Charts)
 export function getKeyCounts(records, suggestions, type) {
   const result = [];
   for (const value of suggestions[type]) {
@@ -126,6 +129,8 @@ export function getKeyCounts(records, suggestions, type) {
   return result;
 }
 
+// Prepares node and link data for the force-directed network graph
+// Calculates how many times items appear together in the same record
 export function getNetworkData(records, fieldName) {
   const nodesMap = {};
   records.forEach((record) => {
@@ -171,6 +176,7 @@ export function getNetworkData(records, fieldName) {
   return { nodes: Object.values(nodesMap), links: Object.values(linksMap) };
 }
 
+// Formats hierarchical data (Category -> Sub-category) for the generic Treemap chart
 export function getTreemapData(records) {
   const categoriesCounts = [];
   records.forEach((record) => {
@@ -213,7 +219,7 @@ export function getTreemapData(records) {
   return { name: "Root", children };
 }
 
-// Древовидная карта для Архивов
+// Formats hierarchical data for archive identifiers using d3.rollup (Archive -> Fond -> Inventory -> File)
 export function getArchiveTreemapData(records) {
   const rollup = d3.rollup(
     records,
