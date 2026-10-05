@@ -168,7 +168,7 @@ pip install -r requirements.txt
 <img width="1050" height="391" alt="Screen Shot 2026-10-05 at 15 50 53" src="https://github.com/user-attachments/assets/075dcc79-8813-4783-ab33-849f421e253f" />
 
 
-# Cтэк технологий
+# Cтек технологий
 
 **pipeline**: Python, pandas, requests, beautifulsoup4, concurrent.futures (ThreadPoolExecutor), asyncio, aiohttp
 
