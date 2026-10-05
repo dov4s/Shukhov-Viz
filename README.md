@@ -18,7 +18,7 @@
 	- index.html
 	- main.js
 	- style.css
-___
+
 # pipeline
 Первая часть проекта. Содержит скрипты выгрузки и предобработки данных на Python.
 ## scraper.py
@@ -116,7 +116,7 @@ pip install -r requirements.txt
 Запустить скрипты можно в терминале или в Jupyter.
 
 Итоговый файл обработки данных лежит в site/data.json.
-___
+
 # site
 Вторая часть проекта — фронтенд-приложение.
 ## Интерактивная таблица
@@ -165,12 +165,13 @@ ___
 
 <img width="1050" height="391" alt="Screen Shot 2026-10-05 at 15 50 53" src="https://github.com/user-attachments/assets/075dcc79-8813-4783-ab33-849f421e253f" />
 
-___
+
 # Cтэк технологий
 
 **pipeline**: Python, pandas, requests, beautifulsoup4, concurrent.futures (ThreadPoolExecutor), asyncio, aiohttp
+
 **site**: JavaScript, D3.js, Observable Plot, AG-Grid 
-___
+
 <img width="1794" height="3680" alt="image" src="https://github.com/user-attachments/assets/a2bbe5e9-f2ce-45f8-ac7b-5770e381551c" />
 
 Сайт доступен по [ссылке](https://dov4s.github.io/Shukhov-Viz/).
