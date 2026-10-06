@@ -1,8 +1,15 @@
-# Визуализация данных как метод поиска по электронному каталогу
+# Интерактивная визуализация данных электронного каталога
 
-Репозиторий бакалаварской ВКР. Проект нацелен на исследование возможностей модернизации поисковых интерфейсов электронных каталогов архивов с использованием интерактивной визуализации данных. В качестве конкретного примера используются данные [электронного каталога "Архив Шухова"](https://rgantd.kaisa.ru/type/SHUHOV).
+<img width="1794" height="3680" alt="image" src="https://github.com/user-attachments/assets/a2bbe5e9-f2ce-45f8-ac7b-5770e381551c" />
 
-Созданию интерфейса предшествует формализация состава и структуры метаданных, поэтому репозиторий разделён на две части.
+Сайт доступен по [ссылке](https://dov4s.github.io/Shukhov-Viz/).
+___
+Проект нацелен на исследование возможностей модернизации поисковых интерфейсов электронных каталогов архивов с использованием интерактивной визуализации данных. 
+
+В качестве конкретного примера используются данные [электронного каталога "Архив Шухова"](https://rgantd.kaisa.ru/type/SHUHOV).
+
+Репозиторий разделён на две части:
+
 - pipeline
 	- scraper.py
 	- async_scraper.py
@@ -183,8 +190,3 @@ pip install -r requirements.txt
 **pipeline**: Python, pandas, requests, beautifulsoup4, concurrent.futures (ThreadPoolExecutor), asyncio, aiohttp
 
 **site**: JavaScript, D3.js, Observable Plot, AG-Grid 
-
-Сайт доступен по [ссылке](https://dov4s.github.io/Shukhov-Viz/).
-
-
-<img width="1794" height="3680" alt="image" src="https://github.com/user-attachments/assets/a2bbe5e9-f2ce-45f8-ac7b-5770e381551c" />
