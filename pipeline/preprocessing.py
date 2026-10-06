@@ -2,8 +2,6 @@ import json
 import re
 import pandas as pd
 
-# написать нормальные комментарии и typhints
-
 # a bunch of hardcoded replacements with typo corrections to regex them properly
 IDENTIFIER_CORRECTIONS = {
     'Российский государственный архив научно-технической документации, ф.11,': 'Российский государственный архив научно-технической документации, Ф. 166',
