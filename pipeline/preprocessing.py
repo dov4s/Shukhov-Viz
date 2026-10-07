@@ -30,9 +30,10 @@ SUGGESTION_COLUMNS: list[str] = [
 ]
 
 
-def capitalize_without_lowercasing(string: str) -> str:
+def capitalize_without_lowercasing(string: str | None) -> str:
     """Capitalizes the first letter of a string without lowercasing the rest"""
-    return string[:1].upper() + string[1:]
+    if pd.notna(string):
+        return string[:1].upper() + string[1:]
 
 # better to use once on a series
 def correct_and_split_form(lst: list[str]) -> list[str]:
@@ -257,57 +258,45 @@ if __name__ == '__main__':
     processed_df = pd.DataFrame()
 
     # extract values of attributes that always have only one value
-    processed_df['url'] = df['url'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['title'] = df['Название документа по описи'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['sub_category'] = df['Подрубрика'].apply(
-        lambda lst:
-            capitalize_without_lowercasing(lst[0])
-            if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['autograph_note'] = df['Наличие автографа'].apply(
-        lambda lst:
-            lst[0].capitalize()
-            if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['conservation_status'] = df['Нуждается в реставрации'].apply(
-        lambda lst:
-            lst[0].capitalize()
-            if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['digital_copy_available'] = df['Наличие цифровой копии'].apply(
-        lambda lst:
-            lst[0].capitalize()
-            if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['control_number'] = df['Производственный номер'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['identifier'] = df['Дополнительные данные'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['archive_name'] = df['Название архива'].apply(
-        lambda lst:
-        lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    # could be easily normalized (raw values for now)
-    processed_df['originality_status'] = df['Подлинник/Копия'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['appraisal'] = df['Ценность'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
+    one_value_cols = {
+        'url': 'url',
+        'Название документа по описи': 'title',
+        'Производственный номер': 'control_number',
+        'Дополнительные данные': 'identifier',
+        'Название архива': 'archive_name',
 
-    # attributes that have more than one value
+        # copy raw values to show in the site table
+        'Дата создания': 'raw_dates',
+        'Адрес расположения объекта': 'raw_location',
+        'Язык документа': 'raw_language',
+        'Дескрипторы': 'raw_descriptors',
+        'Вид документа': 'raw_form',
+        'Носитель (синька,фото,бумага,калька)': 'raw_medium',
+        'Рубрика': 'raw_category',
+
+        # could be easily normalized (raw values for now)
+        'Подлинник/Копия': 'originality_status',
+        'Ценность': 'appraisal',
+    }
+    for old_col, new_col in one_value_cols.items():
+        processed_df[new_col] = df[old_col].str[0].fillna('Нет данных')
+
+    # extract values that always have only one value but need capitilization
+    capitilization_cols = {
+        'Наличие автографа': 'autograph_note',
+        'Нуждается в реставрации': 'conservation_status',
+        'Наличие цифровой копии': 'digital_copy_available'
+    }
+    for old_col, new_col in capitilization_cols.items():
+        processed_df[new_col] = df[old_col].str[0].str.capitalize().fillna(
+                                                                'Нет данных')
+
+    # custom capitalization for sub_category
+    processed_df['sub_category'] = df['Подрубрика'].str[0].apply(
+        capitalize_without_lowercasing
+    ).fillna('Нет данных')
+
+    # descriptors have more than one value
     processed_df['descriptors'] = df['Дескрипторы'].apply(
         lambda lst:
             [descriptor.capitalize() for descriptor in lst]
@@ -322,10 +311,10 @@ if __name__ == '__main__':
     )
     processed_df['form'] = df['Вид документа'].apply(correct_and_split_form)
     processed_df['medium'] = df['Носитель (синька,фото,бумага,калька)'].apply(
-        lambda lst: [
+        lambda lst: [  # return 'Нет данных' in list for js logic
             capitalize_without_lowercasing(token.strip())
             for token in re.split(',', lst[0])
-        ] if isinstance(lst, list) and len(lst) > 0  else ["Нет данных"]  # return list for js logic
+        ] if isinstance(lst, list) and len(lst) > 0  else ["Нет данных"]
     )
     processed_df['category'] = df['Рубрика'].apply(
         lambda lst: [
@@ -345,37 +334,6 @@ if __name__ == '__main__':
             for token in re.split(',', lst[0])
         ]
         if isinstance(lst, list) and len(lst) > 0  else ["Нет данных"]
-    )
-
-    # copy raw values to show in the site table
-    processed_df['raw_dates'] = df['Дата создания'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['raw_location'] = df['Адрес расположения объекта'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['raw_language'] = df['Язык документа'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['raw_descriptors'] = df['Дескрипторы'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['raw_form'] = df['Вид документа'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['raw_medium'] = df[
-        'Носитель (синька,фото,бумага,калька)'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
-    )
-    processed_df['raw_category'] = df['Рубрика'].apply(
-        lambda lst:
-            lst[0] if isinstance(lst, list) and len(lst) > 0 else 'Нет данных'
     )
 
     # parse fond, inventory, file and extent from identifier
